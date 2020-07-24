@@ -8,7 +8,7 @@ __pycache__/
 debug.log
 *.OLD
 *.exe
-websites/
+websites/*
 settings.py
 todo_list.txt
 *.sock

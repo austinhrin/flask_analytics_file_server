@@ -39,3 +39,6 @@ sql_username = ''
 sql_password = ''
 
 ```
+
+## Adding a new website
+Once you have domain dns settings setup and the domain added to the websites variable in the settings.py file all you need to do is add your files to the **./websites/** folder.
