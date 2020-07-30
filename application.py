@@ -33,9 +33,10 @@ def split_url(path):
 @app.route('/<path:path>')
 def catch_all(path):
     # check if the requesting host is in the list of website domains
-    # and make sure there are no "bad" user agents
-    # and don't allow blank user agents
-    if any(site['domain'] == request.host for site in websites) and any(bad_user_agent in str(request.user_agent) for bad_user_agent in bad_user_agents) == False and request.user_agent != '':
+    # make sure there are no "bad" user agents
+    # dont allow bad things in url
+    # dont allow blank user agents
+    if any(site['domain'] == request.host for site in websites) and any(bad_user_agent.lower() in str(request.user_agent).lower() for bad_user_agent in bad_user_agents) == False and request.user_agent != '' and any(part.lower() in str(request.url).lower() for part in not_allowed_in_url) == False:
         # if no path or path is / go to index.html
         if path == '' or path == '/':
             requested_file = 'index.html'
@@ -45,7 +46,8 @@ def catch_all(path):
         folder = get_folder(request.host, split_url(path)[0])
         # check if .html is in requested file name
         # and if not 127.0.0.1:5000
-        if '.html' in requested_file and request.host != '127.0.0.1:5000':
+        # dont track certian user agents
+        if '.html' in requested_file and request.host != '127.0.0.1:5000' and any(user_agent.lower() in str(request.user_agent).lower() for user_agent in dont_track) == False:
             return set_cookie(send_from_directory(folder, requested_file))
         else:
             return send_from_directory(folder, requested_file)

@@ -31,6 +31,30 @@ websites = [
     {'domain': 'austinhrin.com'}
 ]
 
+bad_user_agents = [
+    'curl',
+    'Go-http-client',
+    'masscan/1.0 (https://github.com/robertdavidgraham/masscan)',
+    'NetSystemsResearch studies the availability of various services across the internet. Our website is netsystemsresearch.com',
+    'Mozilla/5.0 (compatible; Nimbostratus-Bot/v1.3.2; http://cloudsystemnetworks.com)',
+    'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)',
+]
+
+# user agents that arent in the above list but we dont want to track
+dont_track = [
+    'facebookexternalhit',
+    'bot',
+    'spider',
+    'google',
+    'seo',
+]
+
+# anything not allowed in url
+not_allowed_in_url = [
+    '<php>',
+    'login.destroy',
+    'cpanel',
+]
 sql_host = ''
 sql_port = 
 sql_db = ''
