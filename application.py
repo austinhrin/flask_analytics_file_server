@@ -33,7 +33,9 @@ def split_url(path):
 @app.route('/<path:path>')
 def catch_all(path):
     # check if the requesting host is in the list of website domains
-    if any(site['domain'] == request.host for site in websites):
+    # and make sure there are no "bad" user agents
+    # and don't allow blank user agents
+    if any(site['domain'] == request.host for site in websites) and any(bad_user_agent in str(request.user_agent) for bad_user_agent in bad_user_agents) == False and request.user_agent != '':
         # if no path or path is / go to index.html
         if path == '' or path == '/':
             requested_file = 'index.html'
@@ -43,7 +45,6 @@ def catch_all(path):
         folder = get_folder(request.host, split_url(path)[0])
         # check if .html is in requested file name
         # and if not 127.0.0.1:5000
-        #print('folder: ', folder, ' requested_file: ', requested_file)
         if '.html' in requested_file and request.host != '127.0.0.1:5000':
             return set_cookie(send_from_directory(folder, requested_file))
         else:
@@ -56,19 +57,37 @@ def catch_all(path):
 
 @ app.route("/viewanalytics")
 def view_analytics():
-    visits_by_ip = 'Number of unique ips: ' + get_total_num_unique_ips(0) + '<br>\nNumber of unique ips in the last 24 hours: ' + get_total_num_unique_ips(
-        1) + '<br>\nNumber of unique ips in the last week: ' + get_total_num_unique_ips(7) + '<br>\n'
+    visits_by_ip = 'Number of unique ips: ' + str(get_total_num_unique_ips(0)) + '<br>\nNumber of unique ips in the last 24 hours: ' + str(get_total_num_unique_ips(
+        1)) + '<br>\nNumber of unique ips in the last week: ' + str(get_total_num_unique_ips(7)) + '<br>\n'
 
-    visits_by_cookie = 'Number of unique cookies: ' + get_total_num_unique_cookies(0) + '<br>\nNumber of unique cookies in the last 24 hours: ' + get_total_num_unique_cookies(
-        1) + '<br>\nNumber of unique cookies in the last week: ' + get_total_num_unique_cookies(7) + '<br>\n'
+    visits_by_cookie = 'Number of unique cookies: ' + str(get_total_num_unique_cookies(0)) + '<br>\nNumber of unique cookies in the last 24 hours: ' + str(get_total_num_unique_cookies(
+        1)) + '<br>\nNumber of unique cookies in the last week: ' + str(get_total_num_unique_cookies(7)) + '<br>\n'
+
+    unique_ips = get_unique_ip_addresses(1)
+    unique_ips_html = ''
+    for tuple in unique_ips:
+        unique_ips_html += str(tuple[0]) + '<br>'
+
+    unique_urls = get_unique_urls(1)
+    unique_urls_html = ''
+    for tuple in unique_urls:
+        unique_urls_html += str(tuple[0]) + ' Total: ' + str(tuple[1]) + '<br>'
+
+    unique_user_agents = get_unique_user_agents(1)
+    unique_user_agents_html = ''
+    for tuple in unique_user_agents:
+        unique_user_agents_html += str(tuple[0]) + \
+            'Total: ' + str(tuple[1]) + '<br>'
 
     html = visits_by_ip + '<br>\n' + \
         visits_by_cookie + "<br>\n" + \
         get_unique_cookies_chart_data() + '<br>\n' + \
         '<h3>Unique IP addresses in the last day:</h3>' + \
-        str(get_unique_ip_addresses(1)) + \
+        str(unique_ips_html) + \
         '<h3>Unique URLs in the last day:</h3>' + \
-        str(get_unique_urls(1))
+        str(unique_urls_html) + \
+        '<h3>Unique user agents in the last day:</h3>' + \
+        str(unique_user_agents_html)
 
     return html
 

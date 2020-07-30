@@ -7,11 +7,9 @@ import random
 import string
 import pymysql
 import json
+from ast import literal_eval
 
 from settings import *
-
-# create a sql select query that will be used when calling select statments.
-# this way it doesn't need to be coded into every function.
 
 
 # this function looks to see if the visitor has a cookie.
@@ -21,7 +19,6 @@ from settings import *
 def set_cookie(html):
     cookie = request.cookies.get('x')
     domain = request.host
-    # epoch_time = str(round(time.time()))
     # calulates epcohtime using utc time for consistency incase server and local time are different
     date_now = datetime.datetime.utcnow()
     epoch_time = str(round(calendar.timegm(date_now.timetuple())))
@@ -73,25 +70,15 @@ def get_data_from_table(query):
                          user=sql_username, passwd=sql_password, db=sql_db)
     c = db.cursor()
     sqlquery = query + ';'
-    # sqlquery = query + ' WHERE EPOCHTIME > ' + \
-    #    return_epoch_time(num_days) + ';'
 
     try:
         c.execute(sqlquery)
         data = c.fetchall()
-
-        # unique_ips = str(data)
-        data_list = []
-        # data_list.append(str(data))
-        for x in data:
-            for value in x:
-                data_list.append(str(value))
-
     except:
-        data_list = "Failed to gather data for your query."
+        data = "Failed to gather data for your query."
 
     db.close()
-    return data_list
+    return str(data)
 
 
 # Get the number of unique ip addresses.
@@ -103,20 +90,27 @@ def get_total_num_unique_ips(num_days):
         query = query + ' WHERE EPOCHTIME > ' + \
             return_epoch_time(num_days)
     num_ips = get_data_from_table(query)
-    return num_ips[0]
+    return num_ips[2:-4]
+
 
 # Get the number of unique visits by cookie.
 # Call get_total_num_unique_cookies(0) for all time unique visits by cookies.
 # Call get_total_num_unique_cookies(1) to get unique number cookies.
-
-
 def get_total_num_unique_cookies(num_days):
     query = 'SELECT COUNT(DISTINCT COOKIE) AS x FROM ' + sql_table
     if num_days != 0:
         query = query + ' WHERE EPOCHTIME > ' + \
             return_epoch_time(num_days)
     num_cookies = get_data_from_table(query)
-    return num_cookies[0]
+    return num_cookies[2:-4]
+
+
+def listify(string):
+    # strip unneeded ( and )
+    string = string[1:-1]
+    string = '[' + string + ']'
+    string = literal_eval(string)
+    return string
 
 
 def get_unique_ip_addresses(num_days):
@@ -126,7 +120,7 @@ def get_unique_ip_addresses(num_days):
         query = query + ' WHERE EPOCHTIME > ' + \
             return_epoch_time(num_days)
     list_of_ips = get_data_from_table(query)
-    return list_of_ips
+    return listify(list_of_ips)
 
 
 def get_unique_urls(num_days):
@@ -137,7 +131,18 @@ def get_unique_urls(num_days):
         query = 'SELECT URL, COUNT(*) AS "#" FROM ' + sql_table + ' WHERE EPOCHTIME > ' + \
             return_epoch_time(num_days) + ' GROUP BY URL ORDER BY 2'
     list_of_urls = get_data_from_table(query)
-    return list_of_urls
+    return listify(list_of_urls)
+
+
+def get_unique_user_agents(num_days):
+    # list unique ip addresses
+    query = 'SELECT user_agent, COUNT(*) AS "#" FROM ' + \
+        sql_table + ' GROUP BY user_agent ORDER BY 2'
+    if num_days != 0:
+        query = 'SELECT user_agent, COUNT(*) AS "#" FROM ' + sql_table + ' WHERE EPOCHTIME > ' + \
+            return_epoch_time(num_days) + ' GROUP BY user_agent ORDER BY 2'
+    list_user_agents = get_data_from_table(query)
+    return listify(list_user_agents)
 
 
 def get_unique_cookies_chart_data():
@@ -151,15 +156,10 @@ def get_unique_cookies_chart_data():
     date_now = datetime.datetime.utcnow()
     epoch_time_now = calendar.timegm(date_now.timetuple())
 
-    # epochmidnightmktime = time.mktime(date_now.timetuple())
     yesterday_midnight = datetime.datetime(
         date_now.year, date_now.month, date_now.day, 0, 0)
     epoch_yesterday_midnight = calendar.timegm(yesterday_midnight.timetuple())
 
-    # aprilFirst = datetime.datetime(2012, 04, 01, 0, 0)
-    # calendar.timegm(aprilFirst.timetuple())
-
-    # epoch_time_now = time.time()
     epoch_midnight_1day_ago = epoch_yesterday_midnight - 86400
     epoch_midnight_2day_ago = epoch_yesterday_midnight - 2 * 86400
     epoch_midnight_3day_ago = epoch_yesterday_midnight - 3 * 86400
@@ -184,22 +184,17 @@ def get_unique_cookies_chart_data():
         """ UNION ALL SELECT COUNT(DISTINCT COOKIE) AS SIXDAYSAGO FROM """ + sql_table + """ WHERE EPOCHTIME < """ + str(
             epoch_midnight_6day_ago) + """ AND EPOCHTIME > """ + str(epoch_midnight_7day_ago) + """;"""
 
-    # sqlquery = """SELECT COUNT(DISTINCT COOKIE) AS x FROM' + sql_table + 'WHERE EPOCHTIME > """ + str(epoch_yesterday_midnight) + 	";"
-
     try:
         c.execute(sqlquery)
         data = c.fetchall()
 
-        # unique_cookies_chart_data = ''
-        # for tuple in data:
-        #	for value in tuple:
-        #		unique_cookies_chart_data += str(value)
-
-        unique_cookies_chart_data = str(data)
-
+        data_list = listify(str(data))
+        unique_cookies_chart_data = []
+        for tuple in data_list:
+            unique_cookies_chart_data.append(str(tuple[0]))
+        unique_cookies_chart_data = str(unique_cookies_chart_data)
     except:
         unique_cookies_chart_data = "Failed to gather the unique cookies chart data."
 
     db.close()
-    # return str(epoch_yesterday_midnight) + "<br>" + str(epoch_time_now) + "<br>" + str(epoch_time_now - epoch_yesterday_midnight) #+ str(time.time())#unique_cookies_chart_data
-    return unique_cookies_chart_data  # + "<br>" + sqlquery
+    return unique_cookies_chart_data
