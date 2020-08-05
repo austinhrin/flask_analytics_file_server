@@ -57,13 +57,6 @@ not_allowed_in_url = [
     'login.destroy',
     'cpanel',
 ]
-sql_host = ''
-sql_port = 
-sql_db = ''
-sql_table = ''
-sql_username = ''
-sql_password = ''
-
 ```
 
 
