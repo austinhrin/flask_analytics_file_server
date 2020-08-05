@@ -9,7 +9,6 @@ debug.log
 *.OLD
 *.exe
 websites/*
-settings.py
 todo_list.txt
 *.sock
 wsgi.py

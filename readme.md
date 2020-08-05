@@ -14,50 +14,13 @@ This project allows you to host multiple static websites with one flask applicat
 * Why is epoch time being used??? Why not just use date/time.. Over complicating something simple.....
 
 ## Settings
-Create files called settings.py, and secrets.py in the main directory.
+Create files called secrets.py in the main directory.
 
 In the secrets.py file you will need to tell the application your Google API keys and MySQL database information.
 
-In the settings file you need to tell the application what websites you will be hosting and if you have your website in a different folder that the domain name.
+In the settings.py file you need to tell the application what websites you will be hosting and if you have your website in a different folder that the domain name. You can also configure the bad url, bad user agents, user agents that are ok but dont track, etc in this file.
 
 By default the application will try to use the domain as the folder name if a folder is not specified. A good use case for this is if you are on your local computer and run the flask application then the domain is 127.0.0.1:5000 but we can not use : in our folder names so our files can not be in a folder with :. Another use case if if you have multiple domains you want to point towards the same folder. For example you have 1967skylark.com and 67skylark.com are you going to make a website for each one or copy/paste teh same files to another folder? Most likely not. You just want to direct them to the same folder. Why would you want two domains that are similar anyways?...................
-
-```
-# settings.py
-websites = [
-    {
-        'domain': '127.0.0.1:5000',
-        'folder': '127.0.0.1'
-    },
-    {'domain': 'indexdothtml.com'},
-    {'domain': 'austinhrin.com'}
-]
-
-bad_user_agents = [
-    'curl',
-    'Go-http-client',
-    'masscan/1.0 (https://github.com/robertdavidgraham/masscan)',
-    'NetSystemsResearch studies the availability of various services across the internet. Our website is netsystemsresearch.com',
-    'Mozilla/5.0 (compatible; Nimbostratus-Bot/v1.3.2; http://cloudsystemnetworks.com)',
-    'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)',
-]
-
-# user agents that arent in the above list but we dont want to track
-dont_track = [
-    'facebookexternalhit',
-    'bot',
-    'spider',
-    'google',
-    'seo',
-]
-
-# anything not allowed in url
-not_allowed_in_url = [
-    '<php>',
-    'login.destroy',
-    'cpanel',
-]
-```
 
 
 ```
