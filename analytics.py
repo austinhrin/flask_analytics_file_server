@@ -9,13 +9,21 @@ import pymysql
 import json
 from ast import literal_eval
 
-from settings import *
+from secrets import secrets
 
+sql_host = secrets['sql']['host']
+sql_port = secrets['sql']['port']
+sql_username = secrets['sql']['username']
+sql_password = secrets['sql']['password']
+sql_db = secrets['sql']['db']
+sql_table = secrets['sql']['table']
 
 # this function looks to see if the visitor has a cookie.
 # if the visitor has a cookie it will return the webpage.
 # if the visitor does not have a cookie it will make one and return the webpage.
 # will call log_visit to log the visit of the visitor.
+
+
 def set_cookie(html):
     cookie = request.cookies.get('x')
     domain = request.host
@@ -143,6 +151,17 @@ def get_unique_user_agents(num_days):
             return_epoch_time(num_days) + ' GROUP BY user_agent ORDER BY 2'
     list_user_agents = get_data_from_table(query)
     return listify(list_user_agents)
+
+
+def get_unique_referers(num_days):
+    # list unique ip addresses
+    query = 'SELECT REFERER, COUNT(*) AS "#" FROM ' + \
+        sql_table + ' GROUP BY REFERER ORDER BY 2'
+    if num_days != 0:
+        query = 'SELECT REFERER, COUNT(*) AS "#" FROM ' + sql_table + ' WHERE EPOCHTIME > ' + \
+            return_epoch_time(num_days) + ' GROUP BY REFERER ORDER BY 2'
+    list_referers = get_data_from_table(query)
+    return listify(list_referers)
 
 
 def get_unique_cookies_chart_data():

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, Markup, request, escape, make_response, session, send_from_directory
 
 from analytics import *
-from settings import websites
+from settings import *
 
 app = Flask(__name__)
 
@@ -32,11 +32,24 @@ def split_url(path):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
-    # check if the requesting host is in the list of website domains
+    # dont allow bad referers
+    if any(referer.lower() in str(request.referrer).lower() for referer in bad_referers) == True:
+        return json.dumps({'error': 'The webpage refering you was black listed. If you wish to visit this website please do so by visting the website directly instead of clicking a link from an outside source.'}), 401
+
     # make sure there are no "bad" user agents
+    if any(bad_user_agent.lower() in str(request.user_agent).lower() for bad_user_agent in bad_user_agents) == True:
+        return json.dumps({'error': 'The user agent your web browser is using has been blacklisted due to spam'}), 401
+
     # dont allow bad things in url
+    if any(part.lower() in str(request.url).lower() for part in not_allowed_in_url) == True:
+        return json.dumps({'error': 'We have found blacklisted text in your url please remove it to visit this website.'}), 401
+
     # dont allow blank user agents
-    if any(site['domain'] == request.host for site in websites) and any(bad_user_agent.lower() in str(request.user_agent).lower() for bad_user_agent in bad_user_agents) == False and request.user_agent != '' and any(part.lower() in str(request.url).lower() for part in not_allowed_in_url) == False:
+    if "".join(str(request.user_agent).split()) == '':
+        return json.dumps({'error': 'The user agent your web browser is using is blank. We have found users that are using blank user agents are spam. Please visit this website with a user agent that is not blank.'}), 401
+
+    # check if the requesting host is in the list of website domains
+    if any(site['domain'] == request.host for site in websites):
         # if no path or path is / go to index.html
         if path == '' or path == '/':
             requested_file = 'index.html'
@@ -79,7 +92,13 @@ def view_analytics():
     unique_user_agents_html = ''
     for tuple in unique_user_agents:
         unique_user_agents_html += str(tuple[0]) + \
-            'Total: ' + str(tuple[1]) + '<br>'
+            ' Total: ' + str(tuple[1]) + '<br>'
+
+    unique_referers = get_unique_referers(1)
+    unique_referers_html = ''
+    for tuple in unique_referers:
+        unique_referers_html += str(tuple[0]) + \
+            ' Total: ' + str(tuple[1]) + '<br>'
 
     html = visits_by_ip + '<br>\n' + \
         visits_by_cookie + "<br>\n" + \
@@ -89,7 +108,9 @@ def view_analytics():
         '<h3>Unique URLs in the last day:</h3>' + \
         str(unique_urls_html) + \
         '<h3>Unique user agents in the last day:</h3>' + \
-        str(unique_user_agents_html)
+        str(unique_user_agents_html) + \
+        '<h3>Unique Referers in the last day:</h3>' + \
+        str(unique_referers_html)
 
     return html
 

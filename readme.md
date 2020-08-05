@@ -14,7 +14,9 @@ This project allows you to host multiple static websites with one flask applicat
 * Why is epoch time being used??? Why not just use date/time.. Over complicating something simple.....
 
 ## Settings
-Create a file called settings.py in the main directory.
+Create files called settings.py, and secrets.py in the main directory.
+
+In the secrets.py file you will need to tell the application your Google API keys and MySQL database information.
 
 In the settings file you need to tell the application what websites you will be hosting and if you have your website in a different folder that the domain name.
 
@@ -61,6 +63,26 @@ sql_db = ''
 sql_table = ''
 sql_username = ''
 sql_password = ''
+
+```
+
+
+```
+# secrets.py
+secrets = {
+    "google": {
+        "client": "",
+        "secret": ""
+    },
+    "sql": {
+        "host": "127.0.0.1",
+        "port": 3306,
+        "db": "",
+        "table": "",
+        "username": "",
+        "password": ""
+    }
+}
 
 ```
 
