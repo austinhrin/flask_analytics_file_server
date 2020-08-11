@@ -3,3 +3,4 @@ pymysql
 user_agents
 google-auth
 requests
+bcrypt
