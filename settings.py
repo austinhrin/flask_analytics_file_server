@@ -8,7 +8,10 @@ websites = [
             'theme': 'default'
         }
     },
-    {'domain': 'indexdothtml.com'},
+    {
+        'domain': 'indexdothtml.com',
+        'jinja2_templates': 'true'
+    },
     {'domain': 'austinhrin.com'},
     {
         'domain': '67skylark.com',
