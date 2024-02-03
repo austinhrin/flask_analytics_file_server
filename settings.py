@@ -113,6 +113,11 @@ not_allowed_in_url = [
     '<php>',
     'login.destroy',
     'cpanel',
+    '?phpinfo',
+    '.php',
+    'wp-admin',
+    'wp-login',
+    'wp-info'
 ]
 
 # bad referers aka referer spam
